@@ -96,11 +96,13 @@ class FlutterScanBluetoothPlugin
     }
 
     private fun onViewDestroy() {
-        startPermissionValidation({
-            if (adapter!!.isDiscovering) {
-                stopScan(null)
-            }
-        }, onPermissionRefused!!)
+//        if (onPermissionRefused != null) {
+//            startPermissionValidation({
+//                if (adapter?.isDiscovering != false) {
+//                    stopScan(null)
+//                }
+//            }, onPermissionRefused!!)
+//        }
     }
 
     private fun toMap(device: BluetoothDevice): Map<String, String> {
