@@ -8,23 +8,33 @@ class BluetoothDevice {
   final String address;
   final bool paired;
   final bool nearby;
+  final String category;
 
-  const BluetoothDevice(this.name, this.address, {this.nearby = false, this.paired = false});
+  const BluetoothDevice(
+    this.name,
+    this.address,
+    this.category, {
+    this.nearby = false,
+    this.paired = false,
+  });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is BluetoothDevice && runtimeType == other.runtimeType && name == other.name && address == other.address;
+  bool operator ==(Object other) => identical(this, other) || other is BluetoothDevice && runtimeType == other.runtimeType && name == other.name && address == other.address;
 
   @override
   int get hashCode => name.hashCode ^ address.hashCode;
 
   Map<String, dynamic> toMap() {
-    return {'name': name, 'address': address};
+    return {
+      'name': name,
+      'address': address,
+      'category': category,
+    };
   }
 
   @override
   String toString() {
-    return 'BluetoothDevice{name: $name, address: $address, paired: $paired, nearby: $nearby}';
+    return 'BluetoothDevice{name: $name, address: $address, paired: $paired, nearby: $nearby,}';
   }
 }
 
@@ -62,7 +72,12 @@ class FlutterScanBluetooth {
   Future<void> startScan({pairedDevices = false}) async {
     final bondedDevices = await _channel.invokeMethod('action_start_scan', pairedDevices);
     for (var device in bondedDevices) {
-      final d = BluetoothDevice(device['name'], device['address'], paired: true);
+      final d = BluetoothDevice(
+        device['name'],
+        device['address'],
+        device['category'],
+        paired: true,
+      );
       _pairedDevices.add(d);
       _controller.add(d);
     }
@@ -79,6 +94,7 @@ class FlutterScanBluetooth {
     _controller.add(BluetoothDevice(
       device['name'],
       device['address'],
+      device['category'],
       nearby: true,
       paired: _pairedDevices.firstWhereOrNull((item) => item.address == device['address']) != null,
     ));

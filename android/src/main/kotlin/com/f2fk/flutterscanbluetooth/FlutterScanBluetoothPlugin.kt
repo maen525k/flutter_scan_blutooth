@@ -3,6 +3,7 @@ package com.f2fk.flutterscanbluetooth
 import android.Manifest.permission.*
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothDevice.DEVICE_TYPE_LE
 import android.bluetooth.BluetoothManager
@@ -110,13 +111,67 @@ class FlutterScanBluetoothPlugin
         var name = device.name ?: device.address
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !name.contains("-LE")) {
-            name += if (device.type == DEVICE_TYPE_LE) "-LE" else ""
+            name += if (device.type == BluetoothDevice.DEVICE_TYPE_LE) "-LE" else ""
         }
 
         map["name"] = name
         map["address"] = device.address
+
+        // Add device type to the map
+        val deviceType = when (device.type) {
+            BluetoothDevice.DEVICE_TYPE_CLASSIC -> "Classic"
+            BluetoothDevice.DEVICE_TYPE_LE -> "LE"
+            BluetoothDevice.DEVICE_TYPE_DUAL -> "Dual"
+            else -> "Unknown"
+        }
+        map["type"] = deviceType
+
+        // Add device category based on BluetoothClass
+        val deviceCategory = getDeviceCategory(device.bluetoothClass)
+        map["category"] = deviceCategory
+
         return map
     }
+
+    private fun getDeviceCategory(bluetoothClass: BluetoothClass?): String {
+        if (bluetoothClass == null) {
+            return "Unknown"
+        }
+
+        return when (bluetoothClass.majorDeviceClass) {
+            BluetoothClass.Device.Major.AUDIO_VIDEO -> {
+                when (bluetoothClass.deviceClass) {
+                    BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES -> "Headphones"
+                    BluetoothClass.Device.AUDIO_VIDEO_LOUDSPEAKER-> "Speaker"
+                    BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO -> "Car Audio"
+                    BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE -> "Handsfree"
+                    BluetoothClass.Device.AUDIO_VIDEO_MICROPHONE -> "Microphone"
+                    BluetoothClass.Device.AUDIO_VIDEO_PORTABLE_AUDIO -> "Portable Audio"
+                    BluetoothClass.Device.AUDIO_VIDEO_HIFI_AUDIO -> "HiFi Audio"
+                    BluetoothClass.Device.AUDIO_VIDEO_VCR -> "VCR"
+                    BluetoothClass.Device.AUDIO_VIDEO_VIDEO_CAMERA -> "Video Camera"
+                    BluetoothClass.Device.AUDIO_VIDEO_CAMCORDER -> "Camcorder"
+                    BluetoothClass.Device.AUDIO_VIDEO_SET_TOP_BOX -> "Set Top Box"
+                    BluetoothClass.Device.AUDIO_VIDEO_VIDEO_CONFERENCING -> "Video Conferencing"
+                    BluetoothClass.Device.AUDIO_VIDEO_VIDEO_GAMING_TOY -> "Video Gaming Toy"
+                    BluetoothClass.Device.AUDIO_VIDEO_UNCATEGORIZED -> "Uncategorized Audio/Video"
+                    else -> "Audio/Video"
+                }
+            }
+            BluetoothClass.Device.Major.COMPUTER -> "Computer"
+            BluetoothClass.Device.Major.HEALTH -> "Health"
+            BluetoothClass.Device.Major.IMAGING -> "Imaging"
+            BluetoothClass.Device.Major.MISC -> "Miscellaneous"
+            BluetoothClass.Device.Major.NETWORKING -> "Networking"
+            BluetoothClass.Device.Major.PERIPHERAL -> "Peripheral"
+            BluetoothClass.Device.Major.PHONE -> "Phone"
+            BluetoothClass.Device.Major.TOY -> "Toy"
+            BluetoothClass.Device.Major.WEARABLE -> "Wearable"
+            BluetoothClass.Device.Major.UNCATEGORIZED -> "Uncategorized"
+            else -> "Unknown"
+        }
+    }
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
         return if (requestCode == REQUEST_PERMISSION) {
