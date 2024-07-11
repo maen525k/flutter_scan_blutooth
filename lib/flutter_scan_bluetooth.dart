@@ -25,7 +25,11 @@ class BluetoothDevice {
   int get hashCode => name.hashCode ^ address.hashCode;
 
   Map<String, dynamic> toMap() {
-    return {'name': name, 'address': address};
+    return {
+      'name': name,
+      'address': address,
+      'category': category,
+    };
   }
 
   @override
